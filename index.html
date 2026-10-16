@@ -1,68 +1,445 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1, maximum-scale=1,
-    user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#080d13">
-  <title>ECLIPSE | Capítulo 1</title>
-  <link rel="stylesheet" href="./mapa1.css">
-  <link rel="stylesheet" href="./personaje.css">
-  <script src="./catalogo_personajes.js" defer></script>
-  <script type="module" src="./personaje.js"></script>
-</head>
-<body data-page="menu">
-  <canvas id="scene" aria-hidden="true"></canvas>
-  <div class="film" aria-hidden="true"></div>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#10121a">
+    <title>Arena Atlas | Catálogo 3D</title>
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap)';
 
-  <main class="menu panel">
-    <p class="eyebrow">ISV KEPLER-9 / TRANSMISIÓN INTERRUMPIDA</p>
-    <h1>ECLIPSE</h1>
-    <p class="subtitle">CAPÍTULO 1 · PROTOCOLO ECLIPSE</p>
-    <p class="muted">
-      340 pasajeros. Una señal de emergencia.<br>
-      No respondas a las voces del conducto.
-    </p>
+    :root {
+      color-scheme: dark;
+      --bg: #10121a;
+      --panel: #191c28;
+      --text: #f5f5fa;
+      --muted: #a0a6bd;
+      --line: rgba(255,255,255,.09);
+      --accent: #c4f275;
+    }
 
-    <nav class="menu-actions" aria-label="Menú principal">
-      <a href="./mapa1.html" class="button primary">Iniciar</a>
-      <button id="choose">Seleccionar personaje</button>
-      <button id="options">Opciones</button>
-      <button id="exit">Salir</button>
-    </nav>
+    * { box-sizing: border-box; }
 
-    <p id="selected" class="eyebrow"></p>
-    <p class="small muted">Control táctil · Auriculares recomendados</p>
-  </main>
+    body {
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 80% 0%, #282344 0, transparent 45%),
+        var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+    }
 
-  <dialog id="characters" aria-labelledby="characters-title">
-    <h2 id="characters-title">Elige superviviente</h2>
-    <div id="character-list" class="character-list"></div>
-    <button data-close>Volver</button>
-  </dialog>
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    button, a, input { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, a:focus-visible, input:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 5px;
+    }
 
-  <dialog id="settings" aria-labelledby="settings-title">
-    <h2 id="settings-title">Opciones</h2>
-    <label class="setting">
-      Volumen
-      <input id="volume" type="range" min="0" max="1" step=".05">
-    </label>
-    <label class="setting">
-      Vibración
-      <input id="haptics" type="checkbox">
-    </label>
-    <p class="muted small">
-      La vibración depende del navegador y del dispositivo.
-      Gira la pantalla para disponer de más espacio.
-    </p>
-    <button data-close>Volver</button>
-  </dialog>
+    .container { width: min(1200px, 90%); margin: auto; }
 
-  <dialog id="goodbye" aria-labelledby="goodbye-title">
-    <h2 id="goodbye-title">Transmisión finalizada</h2>
-    <p>Puedes cerrar esta pestaña para salir.</p>
-    <button data-close>Volver al menú</button>
-  </dialog>
-</body>
-</html>
+    header {
+      height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text);
+      text-decoration: none;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      letter-spacing: -.6px;
+      font-size: 21px;
+    }
+
+    .brand-icon {
+      display: grid;
+      place-items: center;
+      width: 37px;
+      height: 37px;
+      background: var(--accent);
+      color: #20291b;
+      border-radius: 11px;
+      font-size: 25px;
+    }
+
+    .header-label {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .hero {
+      padding: 76px 0 48px;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 28px;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 18px currentColor;
+    }
+
+    h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; }
+
+    h1 {
+      font-size: clamp(42px, 6vw, 76px);
+      letter-spacing: -3px;
+      line-height: 1.04;
+      margin: 20px 0;
+      font-weight: 600;
+    }
+
+    h1 span { color: var(--accent); }
+    .hero p { max-width: 460px; color: var(--muted); line-height: 1.7; }
+
+    .collection {
+      border-left: 1px solid var(--line);
+      padding-left: 28px;
+      min-width: 155px;
+      margin-bottom: 22px;
+    }
+
+    .collection strong {
+      display: block;
+      font: 500 48px 'Space Grotesk', sans-serif;
+    }
+
+    .collection span { font-size: 12px; color: var(--muted); }
+
+    .toolbar {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .filter {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      padding: 11px 18px;
+      border-radius: 100px;
+      transition: .2s;
+    }
+
+    .filter:hover { border-color: #74788e; color: white; }
+    .filter[aria-pressed="true"] {
+      background: var(--accent);
+      color: #1d2817;
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 0 15px;
+      background: #ffffff04;
+      color: var(--muted);
+    }
+
+    .search input {
+      width: 210px;
+      padding: 13px 0;
+      color: white;
+      background: transparent;
+      border: 0;
+    }
+
+    .search input::placeholder { color: var(--muted); }
+
+    .result-count { color: var(--muted); font-size: 12px; margin: 20px 0; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--panel);
+      transition: transform .25s, border-color .25s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: color-mix(in srgb, var(--character) 60%, transparent);
+    }
+
+    .card[hidden] { display: none; }
+
+    .stage {
+      height: 290px;
+      position: relative;
+      background:
+        radial-gradient(ellipse at 50% 65%, var(--glow), transparent 68%),
+        linear-gradient(145deg, #ffffff04, transparent);
+      touch-action: pan-y;
+      cursor: grab;
+    }
+
+    .stage:active { cursor: grabbing; }
+    .stage canvas { display: block; width: 100%; height: 100%; }
+
+    .badge, .number {
+      position: absolute;
+      top: 20px;
+      z-index: 1;
+      pointer-events: none;
+      font-size: 10px;
+      letter-spacing: 1px;
+    }
+
+    .badge {
+      left: 20px;
+      color: var(--character);
+      background: #10121a90;
+      border: 1px solid #ffffff0c;
+      padding: 7px 10px;
+      border-radius: 7px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .number { right: 20px; color: #ffffff50; }
+
+    .rotate-hint {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      color: #ffffff65;
+      font-size: 10px;
+      pointer-events: none;
+    }
+
+    .card-body { padding: 22px; border-top: 1px solid var(--line); }
+
+    .card-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .card h2 { font-size: 23px; letter-spacing: -.7px; margin: 0; }
+
+    .elixir {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 13px;
+      color: #dbafff;
+    }
+
+    .drop {
+      height: 12px;
+      width: 12px;
+      border-radius: 70% 30% 65% 65%;
+      transform: rotate(-45deg);
+      background: #bd71ec;
+      box-shadow: inset 2px 2px 3px #ffffff50;
+    }
+
+    .role { color: var(--muted); font-size: 12px; margin: 9px 0 20px; }
+
+    .card-bottom { display: flex; justify-content: space-between; align-items: center; }
+
+    .tag {
+      font-size: 10px;
+      color: #b2b8ce;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 5px 8px;
+    }
+
+    .details {
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      font-size: 12px;
+      padding: 8px 0 8px 12px;
+    }
+
+    .details span { margin-left: 8px; color: var(--character); }
+
+    .empty {
+      padding: 70px 20px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 20px;
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      border-top: 1px solid var(--line);
+      margin-top: 65px;
+      padding: 25px 0 35px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    dialog {
+      background: #1c2030;
+      color: var(--text);
+      width: min(480px, 90vw);
+      padding: 35px;
+      border: 1px solid #ffffff20;
+      border-radius: 24px;
+      box-shadow: 0 30px 100px #0008;
+    }
+
+    dialog::backdrop { background: #080a12c9; backdrop-filter: blur(9px); }
+
+    .close {
+      position: absolute;
+      right: 15px;
+      top: 12px;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 28px;
+    }
+
+    dialog h2 { font-size: 34px; margin: 18px 0 12px; }
+    dialog p { line-height: 1.8; color: var(--muted); }
+    .traits { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+    .notice { font-size: 11px; border-top: 1px solid var(--line); padding-top: 18px; }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .collection { display: none; }
+      .hero { padding-top: 50px; }
+    }
+
+    @media (max-width: 580px) {
+      .grid { grid-template-columns: 1fr; }
+      .header-label { display: none; }
+      h1 { letter-spacing: -2px; }
+      .hero { padding-bottom: 24px; }
+      .search, .search input { width: 100%; }
+      .filter { padding: 10px 14px; font-size: 12px; }
+      .stage { height: 310px; }
+      footer { flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; }
+    }
+  </style>
+    <script
+    defer
+    src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js">
+  </script>
+    <script defer src="./personajes.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <a class="brand" href="./index.html">
+          <span class="brand-icon" aria-hidden="true">◇</span>
+          ARENA ATLAS
+        </a>
+        <span class="header-label">Colección de personajes / 01</span>
+      </header>
+      <main>
+        <section class="hero" aria-labelledby="title">
+          <div>
+            <div class="eyebrow">
+              <span class="dot">
+              </span> El universo de la arena</div>
+              <h1 id="title">Pequeños héroes.<br>
+                <span>Grandes leyendas.</span>
+              </h1>
+              <p>
+                Explora la colección, descubre cada personaje y gira sus
+                figuras 3D para conocerlos desde otro ángulo.
+              </p>
+            </div>
+            <div class="collection">
+              <strong>09</strong>
+              <span>Personajes por descubrir</span>
+            </div>
+          </section>
+          <section aria-label="Catálogo de personajes">
+            <div class="toolbar">
+              <div class="filters" role="group" aria-label="Filtrar por categoría">
+                <button class="filter" data-filter="Todos" aria-pressed="true">Todos</button>
+                <button class="filter" data-filter="Realeza" aria-pressed="false">Realeza</button>
+                <button class="filter" data-filter="Guerreros" aria-pressed="false">Guerreros</button>
+                <button class="filter" data-filter="Especiales" aria-pressed="false">Especiales</button>
+              </div>
+              <label class="search">
+                <span aria-hidden="true">⌕</span>
+                <input id="search" type="search" placeholder="Buscar personaje..."
+                aria-label="Buscar personaje" autocomplete="off">
+              </label>
+            </div>
+            <p class="result-count" id="count" aria-live="polite">
+            </p>
+            <div class="grid" id="grid">
+            </div>
+            <p class="empty" id="empty" hidden>No hay personajes que coincidan con tu búsqueda.</p>
+            <noscript>Activa JavaScript para explorar los personajes 3D.</noscript>
+          </section>
+        </main>
+        <footer>
+          <span>ARENA ATLAS / Colección interactiva</span>
+          <span>Concepto fan-made. Modelos y atributos de demostración.</span>
+        </footer>
+      </div>
+      <dialog id="detail-dialog" aria-labelledby="detail-name">
+        <button class="close" aria-label="Cerrar ficha">×</button>
+        <div class="eyebrow" id="detail-category">
+        </div>
+        <h2 id="detail-name">
+        </h2>
+        <p id="detail-description">
+        </p>
+        <div class="traits" id="detail-traits">
+        </div>
+        <p class="notice">Interpretación 3D procedural inspirada en la referencia. Atributos ilustrativos, no estadísticas oficiales.</p>
+      </dialog>
+    </body>
+  </html>
